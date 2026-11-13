@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUTTONHUNTER</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#101012;color:white;font-family:Arial,sans-serif;text-align:center}
+main{max-width:550px;margin:auto}
+h1{font-size:36px;color:#ff4757;letter-spacing:2px}
+.sub,.small,.label{color:#aaa}
+.panel{background:#1d1d22;border:1px solid #393941;border-radius:15px;padding:16px;margin:15px 0}
+.stats{display:flex;justify-content:space-around}
+.value{font-size:32px;font-weight:bold;margin:7px}
+#time{color:#ffa502}#score,#best{color:#2ed573}
+#arena{height:350px;background:#18181c;border:2px solid #444;border-radius:15px;position:relative;overflow:hidden;touch-action:manipulation}
+#target{display:none;position:absolute;width:76px;height:76px;border-radius:50%;border:3px solid white;background:radial-gradient(circle at 30% 25%,#ff8796,#ff4757,#a91e28);color:white;font-weight:bold;box-shadow:0 6px 20px #ff475766;touch-action:manipulation}
+#overlay{position:absolute;inset:0;background:#101012ed;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;gap:12px}
+input{background:#292930;border:1px solid #555;border-radius:9px;padding:13px;color:white;text-align:center;width:100%;max-width:280px;font-size:16px}
+button{cursor:pointer}
+.primary{background:#2ed573;color:#111;border:0;border-radius:10px;padding:14px 20px;font-weight:bold;font-size:16px}
+.secondary{background:#292930;color:white;border:1px solid #555;border-radius:9px;padding:10px 16px}
+.row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #38383e}
+.red{color:#ff4757}
+</style>
+</head>
+<body>
+<main>
+<h1>BUTTONHUNTER</h1>
+<p class="sub" id="tagline">CATCH IT. BEAT THE WORLD.</p>
+<button class="secondary" id="language">🇭🇷 HR</button>
+
+<section class="panel">
+<div class="stats">
+<div><div class="label" id="tl">TIME LEFT</div><div class="value" id="time">15.0</div></div>
+<div><div class="label" id="sl">YOUR SCORE</div><div class="value" id="score">0</div></div>
+</div>
+<div class="small" id="rounds">3 FREE ROUNDS LEFT</div>
+</section>
+
+<div id="arena">
+<div id="overlay">
+<h2 class="red" id="welcome">READY TO HUNT?</h2>
+<p id="description">Catch the red button in 15 seconds!</p>
+<input id="nickname" maxlength="20" placeholder="Your nickname">
+<button class="primary" id="start">START FREE ROUND</button>
+<p class="small" id="note">3 free rounds. No payment required.</p>
+</div>
+<button id="target">HIT!</button>
+</div>
+
+<div id="message" class="red">YOUR CHALLENGE STARTS HERE!</div>
+
+<section class="panel">
+<h3 id="boardTitle">🏆 TOP HUNTERS</h3>
+<div class="row"><span>🥇 @luka_speed</span><b>28 pts</b></div>
+<div class="row"><span>🥈 @ana_zg</span><b>24 pts</b></div>
+<div class="row"><span>🥉 Snajper99</span><b>19 pts</b></div>
+<p class="small" id="boardNote">Demo leaderboard.</p>
+</section>
+
+<section class="panel">
+<div class="label" id="bestLabel">YOUR PERSONAL BEST</div>
+<div class="value" id="best">0</div>
+<button class="secondary" id="again">NEW ROUND</button>
+</section>
+<p class="small" id="legal">Demo only. No real payments or cash prizes.</p>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY="buttonhunter_free_rounds_v1";
+let used=Number(localStorage.getItem(KEY)||0);
+let best=Number(localStorage.getItem("bh_best_v1")||0);
+let score=0,time=15,size=76,active=false,timer=null,lang="en";
+
+const text={
+en:{
+tag:"CATCH IT. BEAT THE WORLD.",tl:"TIME LEFT",sl:"YOUR SCORE",
+welcome:"READY TO HUNT?",desc:"Catch the red button in 15 seconds!",
+name:"Your nickname",start:"START FREE ROUND",note:"3 free rounds. No payment required.",
+board:"🏆 TOP HUNTERS",best:"YOUR PERSONAL BEST",again:"NEW ROUND",
+hit:"🎯 HIT! +1 POINT",miss:"❌ MISS! −1 POINT",end:"TIME IS UP!",
+left:n=>n+" FREE ROUNDS LEFT",done:"FREE ROUNDS USED",
+pay:"You have used all 3 free rounds. Paid rounds are coming soon.",
+legal:"Demo only. No real payments or cash prizes.",
+ready:"YOUR CHALLENGE STARTS HERE!"
+},
+hr:{
+tag:"ULOVI GUMB. POBIJEDI SVIJET.",tl:"PREOSTALO VRIJEME",sl:"TVOJ REZULTAT",
+welcome:"SPREMAN ZA LOV?",desc:"Uhvati crveni gumb u 15 sekundi!",
+name:"Tvoj nadimak",start:"ZAPOČNI BESPLATNU RUNDU",note:"3 besplatne runde. Bez plaćanja.",
+board:"🏆 NAJBOLJI LOVCI",best:"TVOJ OSOBNI REKORD",again:"NOVA RUNDA",
+hit:"🎯 POGODAK! +1 BOD",miss:"❌ PROMAŠAJ! −1 BOD",end:"VRIJEME JE ISTEKLO!",
+left:n=>n+" BESPLATNE RUNDE",done:"BESPLATNE RUNDE ISKORIŠTENE",
+pay:"Iskoristio si sve 3 besplatne runde. Plaćene runde dolaze uskoro.",
+legal:"Demo verzija. Nema stvarnih uplata ni novčanih nagrada.",
+ready:"TVOJ IZAZOV POČINJE OVDJE!"
+}
+};
+function t(){return text[lang]}
+function update(){
+$("time").textContent=time.toFixed(1);
+$("score").textContent=score;
+$("best").textContent=best;
+$("rounds").textContent=t().left(Math.max(0,3-used));
+}
+function move(){
+let a=$("arena");
+let x=4+Math.random()*Math.max(0,a.clientWidth-size-8);
+let y=4+Math.random()*Math.max(0,a.clientHeight-size-8);
+$("target").style.left=x+"px";
+$("target").style.top=y+"px";
+}
+function screen(){
+$("overlay").style.display="flex";
+$("welcome").textContent=used>=3?t().done:t().welcome;
+$("description").textContent=used>=3?t().pay:t().desc;
+$("nickname").style.display=used>=3?"none":"block";
+$("start").style.display=used>=3?"none":"block";
+$("start").textContent=t().start;
+$("note").textContent=t().note;
+}
+function start(){
+if(active||used>=3)return;
+used++;
+localStorage.setItem(KEY,used);
+score=0;time=15;size=76;active=true;
+$("overlay").style.display="none";
+$("target").style.display="flex";
+$("target").style.width=size+"px";
+$("target").style.height=size+"px";
+$("message").textContent=t().ready;
+update();move();
+let end=Date.now()+15000;
+timer=setInterval(()=>{
+time=Math.max(0,(end-Date.now())/1000);
+update();
+if(time<=0)finish();
+},50);
+}
+function finish(){
+if(!active)return;
+active=false;clearInterval(timer);
+$("target").style.display="none";
+best=Math.max(best,score);
+localStorage.setItem("bh_best_v1",best);
+$("message").textContent=t().end;
+screen();update();
+}
+$("start").onclick=start;
+$("again").onclick=()=>{
+if(active){active=false;clearInterval(timer);$("target").style.display="none";}
+screen();update();
+};
+$("target").addEventListener("pointerdown",e=>{
+e.preventDefault();e.stopPropagation();
+if(!active)return;
+score++;size=Math.max(42,size-1.5);
+$("target").style.width=size+"px";
+$("target").style.height=size+"px";
+$("message").textContent=t().hit;
+update();move();
+});
+$("arena").addEventListener("pointerdown",e=>{
+if(!active||e.target===$("target"))return;
+score--;
+$("message").textContent=t().miss;
+update();
+});
+$("language").onclick=()=>{
+lang=lang==="en"?"hr":"en";
+$("tagline").textContent=t().tag;
+$("tl").textContent=t().tl;
+$("sl").textContent=t().sl;
+$("boardTitle").textContent=t().board;
+$("bestLabel").textContent=t().best;
+$("again").textContent=t().again;
+$("legal").textContent=t().legal;
+$("language").textContent=lang==="en"?"🇭🇷 HR":"🇬🇧 EN";
+screen();update();
+};
+$("nickname").value=localStorage.getItem("bh_nickname")||"";
+$("nickname").addEventListener("change",()=>localStorage.setItem("bh_nickname",$("nickname").value.trim()));
+$("nickname").placeholder=t().name;
+$("boardNote").textContent=t().legal;
+screen();update();
+</script>
+</body>
+</html>
