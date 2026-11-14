@@ -1,85 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#101827">
 <title>ButtonHunter</title>
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{
+ margin:0;padding:0;height:100dvh;overflow:hidden;
+ background:#101827;color:white;
+ font-family:Arial,sans-serif;text-align:center
+}
 body{
- margin:0;background:#101827;color:white;
- font-family:Arial,sans-serif;text-align:center;
- padding:12px;min-height:100vh
+ display:flex;flex-direction:column;
+ max-width:650px;margin:auto;padding:8px 10px;gap:6px
 }
-header{max-width:650px;margin:auto}
-h1{font-size:36px;color:#38e8a5;margin:12px}
+header{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-shrink:0
+}
+h1{font-size:22px;color:#38e8a5;margin:0}
+.header-btns{display:flex;gap:6px}
 button,input{font:inherit}
-button{cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font-weight:bold}
-#language{background:#29384b;color:white;float:right}
+button{cursor:pointer;border:0;border-radius:10px;padding:8px 12px;font-weight:bold}
+#language,#mute{background:#29384b;color:white;font-size:13px;padding:6px 10px}
 .panel{
- max-width:650px;margin:12px auto;background:#1d293b;
- padding:14px;border-radius:18px
+ background:#1d293b;padding:8px 10px;border-radius:14px;
+ flex-shrink:0
 }
-#nickname{width:85%;max-width:320px;padding:12px;border:0;border-radius:10px;margin:10px}
-#rounds{color:#38e8a5;font-weight:bold;margin:8px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-.stat{background:#101827;padding:10px 4px;border-radius:12px}
-.stat b{display:block;font-size:24px;color:#38e8a5;margin-top:5px}
-.stat small{color:#c3ccda}
-#message{color:#38e8a5;min-height:22px;font-weight:bold}
-#start,#again{background:#38e8a5;color:#102033;margin:5px}
+#rounds{color:#38e8a5;font-weight:bold;font-size:13px;margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stat{background:#101827;padding:6px 4px;border-radius:10px}
+.stat b{display:block;font-size:19px;color:#38e8a5;margin-top:2px}
+.stat small{color:#c3ccda;font-size:11px}
+.status-bar{
+ display:flex;align-items:center;justify-content:space-between;
+ margin-top:6px;min-height:28px;gap:8px
+}
+#message{color:#38e8a5;font-weight:bold;font-size:14px;margin:0;flex:1;text-align:center}
+#again{background:#38e8a5;color:#102033;padding:6px 12px;font-size:13px;display:none}
 #arena{
- position:relative;max-width:650px;height:300px;
- margin:12px auto;background:#172438;
- border:2px solid #34445a;border-radius:18px;
+ position:relative;flex:1;min-height:180px;width:100%;
+ background:#172438;border:2px solid #34445a;border-radius:16px;
  overflow:hidden;touch-action:manipulation
 }
 #target{
  position:absolute;display:none;align-items:center;
  justify-content:center;border-radius:50%;
- background:#ffcf40;color:#172033;font-size:30px;
- box-shadow:0 0 25px #ffcf4080;border:4px solid white;
+ background:#ffcf40;color:#172033;font-size:28px;
+ box-shadow:0 0 20px #ffcf4080;border:3px solid white;
  touch-action:none
 }
 #participants{
- max-width:650px;margin:12px auto;background:#1d293b;
- padding:12px;border-radius:16px
+ background:#1d293b;padding:8px 10px;border-radius:14px;
+ flex-shrink:0
 }
-#participants h3{color:#38e8a5;margin:4px 0 10px}
+#participants h3{color:#38e8a5;margin:0 0 6px;font-size:14px}
+.leaderboard{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .player{
- display:flex;justify-content:space-between;
- background:#101827;padding:9px 12px;
- border-radius:9px;margin:5px 0
+ display:flex;flex-direction:column;align-items:center;
+ background:#101827;padding:5px 4px;border-radius:8px;font-size:12px
 }
-.player b{color:#38e8a5}
+.player span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.player b{color:#38e8a5;margin-top:2px}
 #overlay{
  position:fixed;inset:0;background:#080e18ee;
  display:flex;align-items:center;justify-content:center;
- padding:18px;z-index:5
+ padding:16px;z-index:5
 }
 #overlayBox{
  background:#1d293b;border:1px solid #40516a;
- padding:24px 18px;border-radius:20px;
- width:100%;max-width:420px
+ padding:20px 16px;border-radius:18px;
+ width:100%;max-width:380px
 }
-#overlay h2{color:#38e8a5}
-#legal{font-size:12px;color:#9caabd;margin-top:15px}
-footer{color:#8291a5;font-size:12px;margin:15px}
-@media(max-width:400px){
- h1{font-size:30px}
- #arena{height:270px}
- .panel{padding:11px}
+#overlay h2{color:#38e8a5;margin-top:0;font-size:22px}
+#description{font-size:14px;line-height:1.4}
+#nickname{
+ width:90%;max-width:300px;padding:10px;border:0;
+ border-radius:10px;margin:8px 0;user-select:text
 }
+#start{background:#38e8a5;color:#102033;margin:6px 0;padding:12px 20px;width:90%;max-width:300px}
+#note{font-weight:bold;min-height:20px;margin:8px 0 4px;font-size:14px}
+#legal{font-size:11px;color:#9caabd;margin:8px 0 0}
 </style>
 </head>
 <body>
 
 <header>
-<button id="language">🇬🇧 EN</button>
 <h1>🎯 ButtonHunter</h1>
-<p id="tagline">Pronađi gumb. Pobijedi svoj rekord!</p>
+<div class="header-btns">
+<button id="mute" aria-label="Zvuk">🔊</button>
+<button id="language">🇬🇧 EN</button>
+</div>
 </header>
 
 <div class="panel">
@@ -89,19 +102,19 @@ footer{color:#8291a5;font-size:12px;margin:15px}
 <div class="stat"><small id="bestLabel">Rekord</small><b id="best">0</b></div>
 <div class="stat"><small id="tl">Vrijeme</small><b id="time">15.0</b></div>
 </div>
+<div class="status-bar">
 <p id="message">Spreman za igru?</p>
 <button id="again">↻ Ponovi</button>
 </div>
-
-<div id="participants">
-<h3 id="participantTitle">🏆 Sudionici</h3>
-<div class="player"><span>🥇 Luka</span><b>28 pts</b></div>
-<div class="player"><span>🥈 Ana</span><b>24 pts</b></div>
-<div class="player"><span>🥉 Snajper99</span><b>19 pts</b></div>
 </div>
 
 <div id="arena">
 <button id="target">🎯</button>
+</div>
+
+<div id="participants">
+<h3 id="participantTitle">🏆 Sudionici</h3>
+<div class="leaderboard" id="leaderboard"></div>
 </div>
 
 <div id="overlay">
@@ -116,8 +129,6 @@ footer{color:#8291a5;font-size:12px;margin:15px}
 </div>
 </div>
 
-<footer>BUTTONHUNTER © 2026</footer>
-
 <script>
 const MAX_GAMES=20;
 const KEY="buttonhunter_free_rounds_v2";
@@ -126,7 +137,6 @@ const $=id=>document.getElementById(id);
 
 const text={
 hr:{
-tag:"Pronađi gumb. Pobijedi svoj rekord!",
 tl:"Vrijeme",sl:"Rezultat",best:"Rekord",
 again:"↻ Ponovi",welcome:"Dobrodošao u ButtonHunter!",
 desc:"Imaš 20 besplatnih igara. Pogodi što više puta u 15 sekundi!",
@@ -134,13 +144,12 @@ done:"Iskoristio si svih 20 besplatnih igara!",
 pay:"Hvala što igraš ButtonHunter!",
 start:"ZAPOČNI IGRU",note:"Sretno! 🎯",
 ready:"LOVI GUMB!",hit:"POGODAK! 🎯",
-miss:"PROMAŠAJ!",end:"Vrijeme je isteklo!",
+miss:"PROMAŠAJ!",end:"Kraj! Rezultat:",
 left:n=>"Preostalo besplatnih igara: "+n+" / 20",
 name:"Tvoj nadimak",legal:"Rezultati se spremaju u ovom pregledniku.",
 noName:"Upiši svoj nadimak!",participants:"🏆 Sudionici"
 },
 en:{
-tag:"Hunt the button. Beat your record!",
 tl:"Time",sl:"Score",best:"Record",
 again:"↻ Play again",welcome:"Welcome to ButtonHunter!",
 desc:"You have 20 free games. Hit the target as many times as possible in 15 seconds!",
@@ -148,10 +157,10 @@ done:"You have used all 20 free games!",
 pay:"Thanks for playing ButtonHunter!",
 start:"START GAME",note:"Good luck! 🎯",
 ready:"HUNT THE BUTTON!",hit:"HIT! 🎯",
-miss:"MISS!",end:"Time is up!",
+miss:"MISS!",end:"Time up! Score:",
 left:n=>"Free games remaining: "+n+" / 20",
 name:"Your nickname",legal:"Results are saved in this browser.",
-noName:"Enter your nickname!",participants:"🏆 Players"
+noName:"Enter your nickname!",participants:"🏆 Top Players"
 }
 };
 
@@ -159,9 +168,81 @@ let lang="hr";
 let used=Math.min(MAX_GAMES,Math.max(0,Number(localStorage.getItem(KEY))||0));
 let score=0,time=15;
 let best=Number(localStorage.getItem(BEST_KEY))||0;
-let size=76,active=false,timer=null;
+let size=72,active=false,timer=null;
+let muted=false,audioCtx=null;
+
+function playSound(type){
+if(muted)return;
+try{
+if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==="suspended")audioCtx.resume();
+const now=audioCtx.currentTime;
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+if(type==="hit"){
+osc.type="sine";
+osc.frequency.setValueAtTime(520,now);
+osc.frequency.exponentialRampToValueAtTime(980,now+0.09);
+gain.gain.setValueAtTime(0.22,now);
+gain.gain.exponentialRampToValueAtTime(0.01,now+0.09);
+osc.start(now);
+osc.stop(now+0.09);
+}else if(type==="miss"){
+osc.type="sawtooth";
+osc.frequency.setValueAtTime(170,now);
+osc.frequency.linearRampToValueAtTime(95,now+0.14);
+gain.gain.setValueAtTime(0.18,now);
+gain.gain.exponentialRampToValueAtTime(0.01,now+0.14);
+osc.start(now);
+osc.stop(now+0.14);
+}else if(type==="start"){
+osc.type="triangle";
+osc.frequency.setValueAtTime(440,now);
+osc.frequency.setValueAtTime(660,now+0.08);
+gain.gain.setValueAtTime(0.2,now);
+gain.gain.exponentialRampToValueAtTime(0.01,now+0.18);
+osc.start(now);
+osc.stop(now+0.18);
+}else if(type==="end"){
+osc.type="triangle";
+osc.frequency.setValueAtTime(587,now);
+osc.frequency.setValueAtTime(440,now+0.12);
+osc.frequency.setValueAtTime(330,now+0.24);
+gain.gain.setValueAtTime(0.22,now);
+gain.gain.exponentialRampToValueAtTime(0.01,now+0.38);
+osc.start(now);
+osc.stop(now+0.38);
+}
+}catch(e){}
+}
+
+$("mute").onclick=()=>{
+muted=!muted;
+$("mute").textContent=muted?"🔇":"🔊";
+};
 
 function t(){return text[lang]}
+
+function renderLeaderboard(){
+const base=[
+{name:"Luka",pts:28},
+{name:"Ana",pts:24},
+{name:"Snajper99",pts:19}
+];
+const myName=localStorage.getItem("bh_nickname");
+if(myName&&best>0){
+base.push({name:myName,pts:best});
+}
+base.sort((a,b)=>b.pts-a.pts);
+const top3=base.slice(0,3);
+const medals=["🥇","🥈","🥉"];
+$("leaderboard").innerHTML=top3.map((p,i)=>
+`<div class="player"><span>${medals[i]} ${p.name}</span><b>${p.pts} pts</b></div>`
+).join("");
+}
 
 function update(){
 $("time").textContent=time.toFixed(1);
@@ -185,6 +266,7 @@ $("description").textContent=used>=MAX_GAMES?t().pay:t().desc;
 $("nickname").style.display=used>=MAX_GAMES?"none":"inline-block";
 $("start").style.display=used>=MAX_GAMES?"none":"inline-block";
 $("start").textContent=t().start;
+$("note").style.color="#38e8a5";
 $("note").textContent=t().note;
 $("legal").textContent=t().legal;
 }
@@ -193,17 +275,22 @@ function start(){
 if(active||used>=MAX_GAMES)return;
 let name=$("nickname").value.trim();
 if(!name){
-$("message").textContent=t().noName;
+playSound("miss");
+$("note").style.color="#ff6b6b";
+$("note").textContent=t().noName;
 return;
 }
+playSound("start");
 localStorage.setItem("bh_nickname",name);
 used++;
 localStorage.setItem(KEY,used);
-score=0;time=15;size=76;active=true;
+score=0;time=15;size=72;active=true;
 $("overlay").style.display="none";
+$("again").style.display="none";
 $("target").style.display="flex";
 $("target").style.width=size+"px";
 $("target").style.height=size+"px";
+$("message").style.color="#38e8a5";
 $("message").textContent=t().ready;
 update();move();
 let end=Date.now()+15000;
@@ -218,66 +305,24 @@ function finish(){
 if(!active)return;
 active=false;
 clearInterval(timer);
+playSound("end");
 $("target").style.display="none";
+$("again").style.display="inline-block";
 best=Math.max(best,score);
 localStorage.setItem(BEST_KEY,best);
+$("message").style.color="#38e8a5";
 $("message").textContent=t().end+" "+score;
-screen();update();
+renderLeaderboard();
+screen();
+update();
 }
 
 $("start").onclick=start;
 
 $("again").onclick=()=>{
-if(active){
-active=false;
-clearInterval(timer);
-$("target").style.display="none";
-}
-screen();update();
+screen();
+update();
 };
 
 $("target").addEventListener("pointerdown",e=>{
 e.preventDefault();
-e.stopPropagation();
-if(!active)return;
-score++;
-size=Math.max(42,size-1.5);
-$("target").style.width=size+"px";
-$("target").style.height=size+"px";
-$("message").textContent=t().hit;
-update();move();
-});
-
-$("arena").addEventListener("pointerdown",e=>{
-if(!active||e.target===$("target"))return;
-score--;
-$("message").textContent=t().miss;
-update();
-});
-
-$("language").onclick=()=>{
-lang=lang==="en"?"hr":"en";
-$("tagline").textContent=t().tag;
-$("tl").textContent=t().tl;
-$("sl").textContent=t().sl;
-$("bestLabel").textContent=t().best;
-$("again").textContent=t().again;
-$("legal").textContent=t().legal;
-$("participantTitle").textContent=t().participants;
-$("language").textContent=lang==="en"?"🇭🇷 HR":"🇬🇧 EN";
-$("nickname").placeholder=t().name;
-screen();update();
-};
-
-$("nickname").value=localStorage.getItem("bh_nickname")||"";
-$("nickname").placeholder=t().name;
-$("tagline").textContent=t().tag;
-$("tl").textContent=t().tl;
-$("sl").textContent=t().sl;
-$("bestLabel").textContent=t().best;
-$("again").textContent=t().again;
-
-screen();update();
-</script>
-</body>
-</html>
