@@ -1,89 +1,283 @@
-function t(){return text[lang]}
-function update(){
-$("time").textContent=time.toFixed(1);
-$("score").textContent=score;
-$("best").textContent=best;
-$("rounds").textContent=t().left(Math.max(0,3-used));
+
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>ButtonHunter</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101827;color:#fff;
+ font-family:Arial,sans-serif;text-align:center;
+ min-height:100vh;padding:18px;
 }
-function move(){
-let a=$("arena");
-let x=4+Math.random()*Math.max(0,a.clientWidth-size-8);
-let y=4+Math.random()*Math.max(0,a.clientHeight-size-8);
-$("target").style.left=x+"px";
-$("target").style.top=y+"px";
+header{max-width:650px;margin:auto}
+h1{font-size:40px;color:#38e8a5;margin:15px 0}
+button,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:13px 20px;font-weight:bold}
+#language{background:#29384b;color:white;float:right}
+.panel{
+ max-width:650px;margin:20px auto;background:#1d293b;
+ padding:20px;border-radius:18px;
 }
-function screen(){
-$("overlay").style.display="flex";
-$("welcome").textContent=used>=3?t().done:t().welcome;
-$("description").textContent=used>=3?t().pay:t().desc;
-$("nickname").style.display=used>=3?"none":"block";
-$("start").style.display=used>=3?"none":"block";
-$("start").textContent=t().start;
-$("note").textContent=t().note;
+#tagline{color:#bdc9d8}
+#nickname{
+ width:80%;max-width:320px;padding:13px;
+ border:0;border-radius:10px;margin:12px;
 }
-function start(){
-if(active||used>=3)return;
-used++;
-localStorage.setItem(KEY,used);
-score=0;time=15;size=76;active=true;
-$("overlay").style.display="none";
-$("target").style.display="flex";
-$("target").style.width=size+"px";
-$("target").style.height=size+"px";
-$("message").textContent=t().ready;
-update();move();
-let end=Date.now()+15000;
-timer=setInterval(()=>{
-time=Math.max(0,(end-Date.now())/1000);
-update();
-if(time<=0)finish();
-},50);
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.stat{background:#101827;padding:13px 5px;border-radius:12px}
+.stat b{display:block;font-size:25px;color:#38e8a5;margin-top:7px}
+.stat small{color:#c3ccda}
+#rounds{font-size:17px;color:#38e8a5}
+#message{color:#38e8a5;min-height:24px;font-weight:bold}
+#start,#again{background:#38e8a5;color:#102033;margin:7px}
+#arena{
+ position:relative;max-width:650px;height:350px;
+ margin:20px auto;background:#172438;
+ border:2px solid #34445a;border-radius:18px;
+ overflow:hidden;touch-action:manipulation;
 }
-function finish(){
-if(!active)return;
-active=false;clearInterval(timer);
-$("target").style.display="none";
-best=Math.max(best,score);
-localStorage.setItem("bh_best_v1",best);
-$("message").textContent=t().end;
-screen();update();
+#target{
+ position:absolute;display:none;align-items:center;
+ justify-content:center;border-radius:50%;
+ background:#ffcf40;color:#172033;
+ font-size:30px;box-shadow:0 0 25px #ffcf4080;
+ border:4px solid white;touch-action:none;
 }
-$("start").onclick=start;
-$("again").onclick=()=>{
-if(active){active=false;clearInterval(timer);$("target").style.display="none";}
-screen();update();
+#overlay{
+ position:fixed;inset:0;background:#080e18ee;
+ display:flex;align-items:center;justify-content:center;
+ padding:20px;z-index:5;
+}
+#overlayBox{
+ background:#1d293b;border:1px solid #40516a;
+ padding:28px 20px;border-radius:20px;
+ width:100%;max-width:420px;
+}
+#overlay h2{color:#38e8a5}
+#legal{font-size:12px;color:#9caabd;margin-top:20px}
+footer{color:#8291a5;font-size:12px;margin:25px}
+@media(max-width:400px){
+ h1{font-size:32px}
+ #arena{height:310px}
+ .panel{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<button id="language">🇬🇧 EN</button>
+<h1>🎯 ButtonHunter</h1>
+<p id="tagline">Pronađi gumb. Pobijedi svoj rekord!</p>
+</header>
+
+<div class="panel">
+ <input id="nickname" maxlength="20" placeholder="Tvoj nadimak">
+ <div id="rounds">Preostalo besplatnih igara: 20 / 20</div>
+
+ <div class="stats">
+  <div class="stat"><small id="sl">Rezultat</small><b id="score">0</b></div>
+  <div class="stat"><small id="bestLabel">Rekord</small><b id="best">0</b></div>
+  <div class="stat"><small id="tl">Vrijeme</small><b id="time">15.0</b></div>
+ </div>
+
+ <p id="message">Spreman za igru?</p>
+ <button id="again">↻ Ponovi</button>
+ <p id="boardNote">Svaki pogodak donosi bod. Promašaj oduzima bod.</p>
+</div>
+
+<div id="arena">
+ <button id="target">🎯</button>
+</div>
+
+<div id="overlay">
+ <div id="overlayBox">
+  <h2 id="welcome">Dobrodošao u ButtonHunter!</h2>
+  <p id="description">Imaš 20 besplatnih igara. Pogodi što više puta u 15 sekundi!</p>
+  <input id="nickname" placeholder="Tvoj nadimak" maxlength="20">
+  <br>
+  <button id="start">ZAPOČNI IGRU</button>
+  <p id="note">Sretno! 🎯</p>
+  <p id="legal">Rezultati se spremaju u ovom pregledniku.</p>
+ </div>
+</div>
+
+<footer>BUTTONHUNTER © 2026</footer>
+
+<script>
+const MAX_GAMES=20;
+const KEY="bh_used_v1";
+const BEST_KEY="bh_best_v1";
+
+const $=id=>document.getElementById(id);
+
+const text={
+ hr:{
+  tag:"Pronađi gumb. Pobijedi svoj rekord!",
+  tl:"Vrijeme",sl:"Rezultat",board:"Najbolji rezultat",
+  best:"Rekord",again:"↻ Ponovi",
+  welcome:"Dobrodošao u ButtonHunter!",
+  desc:"Imaš 20 besplatnih igara. Pogodi što više puta u 15 sekundi!",
+  done:"Iskoristio si svih 20 besplatnih igara!",
+  pay:"Hvala što igraš ButtonHunter!",
+  start:"ZAPOČNI IGRU",
+  note:"Sretno! 🎯",ready:"LOVI GUMB!",
+  hit:"POGODAK! 🎯",miss:"PROMAŠAJ!",
+  end:"Vrijeme je isteklo!",
+  left:n=>"Preostalo besplatnih igara: "+n+" / 20",
+  name:"Tvoj nadimak",legal:"Rezultati se spremaju u ovom pregledniku.",
+  noName:"Upiši svoj nadimak!"
+ },
+ en:{
+  tag:"Hunt the button. Beat your record!",
+  tl:"Time",sl:"Score",board:"Best score",
+  best:"Record",again:"↻ Play again",
+  welcome:"Welcome to ButtonHunter!",
+  desc:"You have 20 free games. Hit the target as many times as possible in 15 seconds!",
+  done:"You have used all 20 free games!",
+  pay:"Thanks for playing ButtonHunter!",
+  start:"START GAME",
+  note:"Good luck! 🎯",ready:"HUNT THE BUTTON!",
+  hit:"HIT! 🎯",miss:"MISS!",
+  end:"Time is up!",
+  left:n=>"Free games remaining: "+n+" / 20",
+  name:"Your nickname",legal:"Results are saved in this browser.",
+  noName:"Enter your nickname!"
+ }
 };
+
+let lang="hr";
+let used=Math.min(MAX_GAMES,Math.max(0,Number(localStorage.getItem(KEY))||0));
+let score=0,time=15,best=Number(localStorage.getItem(BEST_KEY))||0;
+let size=76,active=false,timer=null;
+
+function t(){return text[lang]}
+
+function update(){
+ $("time").textContent=time.toFixed(1);
+ $("score").textContent=score;
+ $("best").textContent=best;
+ $("rounds").textContent=t().left(Math.max(0,MAX_GAMES-used));
+}
+
+function move(){
+ let a=$("arena");
+ let x=4+Math.random()*Math.max(0,a.clientWidth-size-8);
+ let y=4+Math.random()*Math.max(0,a.clientHeight-size-8);
+ $("target").style.left=x+"px";
+ $("target").style.top=y+"px";
+}
+
+function screen(){
+ $("overlay").style.display="flex";
+ $("welcome").textContent=used>=MAX_GAMES?t().done:t().welcome;
+ $("description").textContent=used>=MAX_GAMES?t().pay:t().desc;
+ $("nickname").style.display=used>=MAX_GAMES?"none":"block";
+ $("start").style.display=used>=MAX_GAMES?"none":"inline-block";
+ $("start").textContent=t().start;
+ $("note").textContent=t().note;
+ $("legal").textContent=t().legal;
+}
+
+function start(){
+ if(active||used>=MAX_GAMES)return;
+ let name=$("nickname").value.trim();
+ if(!name){
+  $("message").textContent=t().noName;
+  return;
+ }
+ localStorage.setItem("bh_nickname",name);
+ used++;
+ localStorage.setItem(KEY,used);
+ score=0;time=15;size=76;active=true;
+ $("overlay").style.display="none";
+ $("target").style.display="flex";
+ $("target").style.width=size+"px";
+ $("target").style.height=size+"px";
+ $("message").textContent=t().ready;
+ update();move();
+ let end=Date.now()+15000;
+ timer=setInterval(()=>{
+  time=Math.max(0,(end-Date.now())/1000);
+  update();
+  if(time<=0)finish();
+ },50);
+}
+
+function finish(){
+ if(!active)return;
+ active=false;
+ clearInterval(timer);
+ $("target").style.display="none";
+ best=Math.max(best,score);
+ localStorage.setItem(BEST_KEY,best);
+ $("message").textContent=t().end+" "+score;
+ screen();update();
+}
+
+$("start").onclick=start;
+
+$("again").onclick=()=>{
+ if(active){
+  active=false;
+  clearInterval(timer);
+  $("target").style.display="none";
+ }
+ screen();update();
+};
+
 $("target").addEventListener("pointerdown",e=>{
-e.preventDefault();e.stopPropagation();
-if(!active)return;
-score++;size=Math.max(42,size-1.5);
-$("target").style.width=size+"px";
-$("target").style.height=size+"px";
-$("message").textContent=t().hit;
-update();move();
+ e.preventDefault();
+ e.stopPropagation();
+ if(!active)return;
+ score++;
+ size=Math.max(42,size-1.5);
+ $("target").style.width=size+"px";
+ $("target").style.height=size+"px";
+ $("message").textContent=t().hit;
+ update();move();
 });
+
 $("arena").addEventListener("pointerdown",e=>{
-if(!active||e.target===$("target"))return;
-score--;
-$("message").textContent=t().miss;
-update();
+ if(!active||e.target===$("target"))return;
+ score--;
+ $("message").textContent=t().miss;
+ update();
 });
+
 $("language").onclick=()=>{
-lang=lang==="en"?"hr":"en";
+ lang=lang==="en"?"hr":"en";
+ $("tagline").textContent=t().tag;
+ $("tl").textContent=t().tl;
+ $("sl").textContent=t().sl;
+ $("boardNote").textContent=t().legal;
+ $("bestLabel").textContent=t().best;
+ $("again").textContent=t().again;
+ $("legal").textContent=t().legal;
+ $("language").textContent=lang==="en"?"🇭🇷 HR":"🇬🇧 EN";
+ $("nickname").placeholder=t().name;
+ screen();update();
+};
+
+let savedName=localStorage.getItem("bh_nickname")||"";
+document.querySelectorAll("#nickname").forEach(el=>{
+ el.value=savedName;
+ el.addEventListener("change",()=>{
+  localStorage.setItem("bh_nickname",el.value.trim());
+ });
+});
+
+$("nickname").placeholder=t().name;
 $("tagline").textContent=t().tag;
 $("tl").textContent=t().tl;
 $("sl").textContent=t().sl;
-$("boardTitle").textContent=t().board;
 $("bestLabel").textContent=t().best;
 $("again").textContent=t().again;
-$("legal").textContent=t().legal;
-$("language").textContent=lang==="en"?"🇭🇷 HR":"🇬🇧 EN";
-screen();update();
-};
-$("nickname").value=localStorage.getItem("bh_nickname")||"";
-$("nickname").addEventListener("change",()=>localStorage.setItem("bh_nickname",$("nickname").value.trim()));
-$("nickname").placeholder=t().name;
-$("boardNote").textContent=t().legal;
+
 screen();update();
 </script>
 </body>
